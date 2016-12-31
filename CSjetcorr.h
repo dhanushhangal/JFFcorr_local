@@ -27,8 +27,9 @@ class CSjetcorr{
         double corr_factor;
         double pol0_corr;
         double pt_bin;
+        Double_t jt_bin_bounds[43];
 
-		TString cent[4];
+	    TString cent[4];
      	TF1 *f1_par0[4];
         TF1 *f1_par1[4];
         TF1 *f1_pol0[4];
@@ -61,11 +62,7 @@ CSjetcorr::CSjetcorr(){
 
 double CSjetcorr::applyCSjetcorr(int nCSGT2, double calo_jtpt, int mycbin) {
 
-    ///// corrections
-
-    pt_bin = (calo_jtpt-80)/10;
-
-    calo_jtpt = calo_jtpt*((h_ratio[mycbin]->GetBinContent(pt_bin+1)));
+	jt_bin_bounds[43]; = {80., 90., 100., 110., 120., 130., 140., 150., 160., 170., 180., 190., 200., 210., 220., 230., 240., 250., 260., 270., 280.,290.,300.,310.,320.,330.,340.,350.,360.,370.,380.,390.,400.,410.,420.,430.,440.,450.,460.,470.,480.,490.,500.};
 
     //////apply residual correction
 
@@ -81,7 +78,19 @@ double CSjetcorr::applyCSjetcorr(int nCSGT2, double calo_jtpt, int mycbin) {
             
     pol0_corr = f1_pol0[mycbin]->GetParameter(0);
 
-    corr_calo_jtpt = calo_jtpt*(1./pol0_corr); 
+    calo_jtpt = calo_jtpt*(1./pol0_corr); 
+
+    ///// corrections
+
+    for (int pt_bin = 0; pt_bin < 42; pt_bin++){
+
+      if (calo_jtpt > jt_bin_bounds[pt_bin] && calo_jtpt <= jt_bin_bounds[pt_bin+1]){
+        
+        mypt_bin = pt_bin; 
+      }
+    }    
+
+    corr_calo_jtpt = calo_jtpt*((h_ratio[mycbin]->GetBinContent(mypt_bin+1))); 
 
     return corr_calo_jtpt; 
 }
